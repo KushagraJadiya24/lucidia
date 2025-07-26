@@ -1,0 +1,15 @@
+<% layout('layouts/boilerplate') %>
+
+<% for (let entry of entries){ %>
+<div class="entry card" style="width: 18rem;">
+  <div class="card-body">
+  <div class="d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0"> <%= entry.title %> </h5>
+    <small class="text-muted ms-2">
+      <%= entry.createdAt.toLocaleDateString('en-IN') %>
+    </small>
+  </div>
+  <p class="card-text mt-3"><%= entry.content %></p>
+</div>
+</div>   
+<% } %>
