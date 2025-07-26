@@ -1,0 +1,262 @@
+/* Background and Font */
+html,body {
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.page-bg {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #010102, #32273f);
+}
+
+.navbar {
+  background-color: transparent;
+  position: sticky;
+  top:0;
+  z-index: 1000;
+}
+.navbar.scrolled {
+  background-color: rgba(15, 15, 27, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+}
+#main-logo-text {
+  font-family: "Tourney", sans-serif;
+}
+/* Hero Section */
+.hero {
+  padding: 6rem 2rem;
+  text-align: center;
+  position: relative;
+}
+
+/* Hero Heading with Gradient */
+.hero h1 {
+  font-size: 4rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+/* Hero Subheading */
+.hero p {
+  font-size: 1.2rem;
+  color: #9ca3af;
+  margin-bottom: 2rem;
+}
+
+/* CTA Button */
+ .btn-custom {
+  background-color: #ffffff;
+  color: #0f0f1b;
+  border: none;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  transition: 0.3s ease;
+}
+
+.btn-custom:hover {
+  background-color: #8b5cf6;
+  color: #d3d2d2;
+}
+
+/* Avatars Row */
+.user-avatars img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 0 0.3rem;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+/* Text Below Avatars */
+.user-text {
+  color: #22c55e;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+ .entry.card {
+  background: rgba(255, 255, 255, 0.05); /* glass effect */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  color: #f1f1f1;
+  padding: 1.5rem;
+  margin: 1rem;
+  min-height: 350px;
+  max-height: 350px; 
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.entry.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+.a.text-decoration-none:hover {
+  text-decoration: none;
+}
+ .entry .card-text {
+  font-family: 'Kalam', cursive;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 1.8rem,
+    rgba(255, 255, 255, 0.05) 1.8rem,
+    rgba(255, 255, 255, 0.05) 2rem
+  );
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  line-height: 2rem;
+  white-space: pre-wrap;
+}
+.entry .card-title {
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+
+.entry small.text-muted {
+  font-size: 0.85rem;
+  color: #cfcfcf !important;
+}
+
+.new_entry {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 900px;
+  min-height: 500px;
+}
+.new_entry h1 {
+  font-family: "Pinyon Script", cursive;
+  font-weight: 400;
+  border-bottom: #32273f;
+  font-size: 2.5rem;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  
+}
+.gradient-heading {
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.old_entry{
+  border-radius: 1rem;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 900px;
+  min-height: 500px;
+}
+.old_entry h1 {
+  font-family: "Pinyon Script";
+  font-weight: 400;
+  border-bottom: #32273f;
+  font-size: 2.5rem;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  
+}
+
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-entry {
+  animation: fadeSlideUp 1s ease-out;
+}
+
+
+.journal-textarea,
+.journal-title-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  transition: border 0.3s ease;
+}
+
+.journal-textarea::placeholder,
+.journal-title-input::placeholder {
+  color: #ccc;
+}
+
+.old-journal-title-input:focus,
+.old-journal-textarea:focus,
+.journal-textarea:focus,
+.journal-title-input:focus {
+  background: rgba(255, 255, 255, 0.05); /* same as default */
+  color: #ffffff;
+  border: 1px solid #8b5cf6;
+  outline: none;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+.journal-btn {
+  background: linear-gradient(90deg, #8b5cf6, #702b9d);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  border-radius: 10px;
+  transition: 0.3s ease-in-out;
+}
+
+.journal-btn:hover {
+  background: linear-gradient(90deg, #a78bfa, #64377d);
+  color: #fff;
+}
+
+.old-journal-textarea{
+ background: rgba(255, 255, 255, 0);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  transition: border 0.3s ease;
+}
+.old-journal-title-input{
+background: rgba(255, 255, 255, 0);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  transition: border 0.3s ease;
+}

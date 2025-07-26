@@ -1,0 +1,17 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container new_entry mt-5">
+  <div class="new-entry-header text-center mb-5 animate-entry">
+    <h1 class="display-5 fw-bold gradient-heading">“Dear Diary, Today I…”</h1>
+  </div>
+
+  <form action="/entries" method="POST" class="new-entry-form">
+  <textarea class="form-control journal-textarea mb-4" rows="6" name = "content" placeholder="Write your entry here..."></textarea>
+
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <input type="text" name="title" class="form-control journal-title-input w-50" placeholder="Title of your entry" required>
+    <button type="submit" class="btn journal-btn">Save Entry</button>
+  </div>
+</form>
+
+</div>
