@@ -9,15 +9,16 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const Entry = require('./models/entry');
 const User = require('./models/user');
-const { isLoggedIn } = require('./middleware'); // custom middleware
+const flash = require('connect-flash');
+const { isLoggedIn, isAuthor } = require('./middleware');
 
 // DB connection
 const MONGO_URL = "mongodb://127.0.0.1:27017/lucidia";
 mongoose.connect(MONGO_URL)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch(err => console.error(err));
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch(err => console.error("❌ MongoDB Error:", err));
 
-// App config
+// App setup
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -25,50 +26,58 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 
-// Session config
+// Session & Flash
 app.use(session({
   secret: 'thisshouldbeabettersecret',
   resave: false,
   saveUninitialized: false
 }));
 
-// Passport config
+
+// Passport Config
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-// Middleware to pass current user to all templates
+app.use(flash());
+// Global Middleware for templates
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
   next();
 });
+
 
 // ===================== ROUTES ======================
 
 // Landing page
 app.get('/', (req, res) => {
-  res.render('landing.ejs');
+  res.render('landing');
 });
 
-// Show all entries - only user's own
+// Show all entries (only for logged-in user)
 app.get('/entries', isLoggedIn, async (req, res) => {
   const entries = await Entry.find({ user: req.user._id });
-  res.render('entries/entries.ejs', { entries });
+  res.render('entries/entries', { entries });
 });
 
-// Form to create a new entry
-app.get('/entries/new', isLoggedIn, (req, res) => {
-  res.render('entries/new.ejs');
+// New entry form
+app.get('/entries/new', isLoggedIn,isAuthor, (req, res) => {
+  res.render('entries/new');
 });
 
-// Show single entry
-app.get('/entries/:id', isLoggedIn, async (req, res) => {
+// Show one entry
+app.get('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
   const { id } = req.params;
   const entry = await Entry.findById(id);
-  if (!entry) return res.status(404).send("Entry not found");
-  res.render('entries/show.ejs', { entry });
+  if (!entry) {
+    req.flash('error', 'Entry not found');
+    return res.redirect('/entries');
+  }
+  res.render('entries/show', { entry });
 });
 
 // Create new entry
@@ -78,39 +87,31 @@ app.post('/entries', isLoggedIn, async (req, res) => {
     title,
     content,
     createdAt: new Date(),
-    user: req.user._id // associate entry with logged-in user
+    user: req.user._id
   });
   await newEntry.save();
+  req.flash('success', 'Entry created!');
   res.redirect('/entries');
 });
 
-// Edit entry
-app.patch('/entries/:id', isLoggedIn, async (req, res) => {
+// Update entry
+app.patch('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
   const { id } = req.params;
   const { title, content } = req.body;
-  const entry = await Entry.findById(id);
 
-  if (!entry) return res.status(404).send("Entry not found");
-  if (!entry.user.equals(req.user._id)) return res.status(403).send("Unauthorized");
-
-  entry.title = title;
-  entry.content = content;
-  await entry.save();
+  await Entry.findByIdAndUpdate(id, { title, content });
+  req.flash('success', 'Entry updated!');
   res.redirect(`/entries/${id}`);
 });
 
 // Delete entry
-app.delete('/entries/:id', isLoggedIn, async (req, res) => {
-  const { id } = req.params;
-  const entry = await Entry.findById(id);
-  if (!entry) return res.status(404).send("Entry not found");
-  if (!entry.user.equals(req.user._id)) return res.status(403).send("Unauthorized");
-
-  await Entry.findByIdAndDelete(id);
+app.delete('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
+  await Entry.findByIdAndDelete(req.params.id);
+  req.flash('success', 'Entry deleted!');
   res.redirect('/entries');
 });
 
-// =================== AUTH ===================
+// ============== AUTH ROUTES ==============
 
 // Signup form
 app.get('/signup', (req, res) => {
@@ -125,10 +126,12 @@ app.post('/signup', async (req, res, next) => {
     const registeredUser = await User.register(user, password);
     req.login(registeredUser, err => {
       if (err) return next(err);
+      req.flash('success', 'Welcome to Lucidia!');
       res.redirect('/entries');
     });
   } catch (e) {
-    res.send("Signup error: " + e.message);
+    req.flash('error', e.message);
+    res.redirect('/signup');
   }
 });
 
@@ -139,7 +142,9 @@ app.get('/login', (req, res) => {
 
 // Login logic
 app.post('/login', passport.authenticate('local', {
+  failureFlash: true,
   failureRedirect: '/login',
+  successFlash: 'Welcome back to Lucidia!',
   successRedirect: '/entries'
 }));
 
@@ -147,11 +152,12 @@ app.post('/login', passport.authenticate('local', {
 app.get('/logout', (req, res, next) => {
   req.logout(err => {
     if (err) return next(err);
+    req.flash('success', 'Logged out successfully!');
     res.redirect('/');
   });
 });
 
-// ====================================================
+// =================== SERVER ===================
 app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+  console.log("🚀 Server running on http://localhost:3000");
 });
