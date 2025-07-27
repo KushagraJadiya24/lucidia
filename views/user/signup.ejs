@@ -1,0 +1,23 @@
+<% layout('layouts/boilerplate') %>
+<div class="container d-flex justify-content-center align-items-center mt-5">
+  <div class="glass-card p-5 rounded-4 shadow-lg" style="width: 100%; max-width: 480px;">
+    <h2 class="text-center gradient-heading mb-4">Create Your Lucidia Account</h2>
+    <form action="/signup" method="POST" class="signup-form">
+      <div class="mb-3">
+        <label for="username" class="form-label text-light">Username</label>
+        <input type="text" name="username" class="form-control bg-dark-subtle text-white" placeholder="Choose a username" required>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label text-light">Email</label>
+        <input type="email" name="email" class="form-control bg-dark-subtle text-white" placeholder="Your email address" required>
+      </div>
+      <div class="mb-4">
+        <label for="password" class="form-label text-light">Password</label>
+        <input type="password" name="password" class="form-control bg-dark-subtle text-white" placeholder="Create a password" required>
+      </div>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-lg journal-btn">Sign Up</button>
+      </div>
+    </form>
+  </div>
+</div>

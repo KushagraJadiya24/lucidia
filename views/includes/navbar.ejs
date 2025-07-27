@@ -1,4 +1,11 @@
 <nav class="navbar navbar-dark bg-transparent px-4 pt-3">
-  <a class="navbar-brand fw-bold fs-4" id="main-logo-text"href="/">Lucidia</a>
-  <button class="btn btn-outline-light">Login</button>
+  <a class="navbar-brand fw-bold fs-4" id="main-logo-text" href="/">Lucidia</a>
+
+  <% if (!currentUser) { %>
+    <a href="/login" class="btn btn-outline-light">Login</a>
+  <% } else { %>
+    <form action="/logout" method="GET" class="d-inline">
+      <button class="btn btn-outline-light">Logout</button>
+    </form>
+  <% } %>
 </nav>
