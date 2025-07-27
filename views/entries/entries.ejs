@@ -1,8 +1,13 @@
 <% layout('layouts/boilerplate') %>
 
 <div class="container mt-5">
-  <h1 class="mb-4 text-white">Entries</h1>
-    <a href="/entries/new" class="btn btn-primary mb-3">Create New Entry</a>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="diary">My Diary</h1>
+    <a href="/entries/new" class="btn btn-primary px-4 py-2 shadow-sm">
+      <i class="bi bi-plus-circle me-1"></i> New Entry
+    </a>
+  </div>
+
   <div class="row">
     <% if (entries.length === 0) { %>
       <div class="col-12">
@@ -11,22 +16,20 @@
         </div>
       </div>
     <% } else { %>
-     <% for (let entry of entries) { %>
-  <div class="col-md-4 mb-4">
-    <div class="entry card h-100 position-relative">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="card-title mb-0"><%= entry.title %></h5>
-          <small class="text-muted"><%= entry.createdAt.toLocaleDateString('en-IN') %></small>
+      <% for (let entry of entries) { %>
+        <div class="col-md-4 mb-4">
+          <div class="entry card h-100 position-relative">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="card-title mb-0"><%= entry.title %></h5>
+                <small class="text-muted"><%= entry.createdAt.toLocaleDateString('en-IN') %></small>
+              </div>
+              <div class="card-text"><%- entry.content %></div>
+              <a href="/entries/<%= entry._id %>" class="stretched-link"></a>
+            </div>
+          </div>
         </div>
-        <p class="card-text"><%= entry.content %></p>
-
-        <a href="/entries/<%= entry._id %>" class="stretched-link"></a>
-      </div>
-    </div>
-  </div>
-<% } %>
-
+      <% } %>
     <% } %>
   </div>
 </div>

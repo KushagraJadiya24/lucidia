@@ -65,7 +65,7 @@ app.get('/entries', isLoggedIn, async (req, res) => {
 });
 
 // New entry form
-app.get('/entries/new', isLoggedIn,isAuthor, (req, res) => {
+app.get('/entries/new', isLoggedIn,(req, res) => {
   res.render('entries/new');
 });
 

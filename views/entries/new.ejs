@@ -5,13 +5,36 @@
     <h1 class="display-5 fw-bold gradient-heading">“Dear Diary, Today I…”</h1>
   </div>
 
-  <form action="/entries" method="POST" class="new-entry-form">
-  <textarea class="form-control journal-textarea mb-4" rows="6" name = "content" placeholder="Write your entry here..."></textarea>
-
-  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-    <input type="text" name="title" class="form-control journal-title-input w-50" placeholder="Title of your entry" required>
-    <button type="submit" class="btn journal-btn">Save Entry</button>
+ <form id="entry-form" action="/entries" method="POST">
+  <div class="mb-3">
+    <label for="title" class="form-label">Title</label>
+    <input type="text" class="form-control" id="title" name="title" required />
   </div>
+
+  <div class="mb-3">
+    <label class="form-label">Content</label>
+    <div id="editor" style="height: 300px;"></div>
+
+    <!-- Hidden field to store HTML from Quill -->
+    <textarea id="content" name="content" hidden></textarea>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Create Entry</button>
 </form>
+
+
+<script>
+  const quill = new Quill('#editor', {
+    theme: 'snow'
+  });
+
+   const form = document.getElementById('entry-form');
+  const contentInput = document.getElementById('content');
+
+  form.addEventListener('submit', function (e) {
+    contentInput.value = quill.root.innerHTML;
+  });
+</script>
+
 
 </div>
