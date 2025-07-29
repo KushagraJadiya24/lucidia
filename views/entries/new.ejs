@@ -4,60 +4,67 @@
   <div class="new-entry-header text-center mb-5 animate-entry">
     <h1 class="display-5 fw-bold gradient-heading">“Dear Diary, Today I…”</h1>
   </div>
-  <button id="ai-suggest-btn" class="btn btn-outline-light">
+
+  <% if (typeof aiUsesLeft !== 'undefined') { %>
+    <div class="alert alert-info small mb-3">
+      <i class="bi bi-robot"></i>
+      AI uses left today: <strong id="ai-uses-left"><%= aiUsesLeft %></strong>/5
+    </div>
+  <% } %>
+
+  <button id="ai-suggest-btn" class="btn btn-outline-light mb-3"
+    <%= aiUsesLeft === 0 ? "disabled title='Daily AI limit reached'" : "" %>>
     <span id="btn-text">Get AI Suggestion</span>
     <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
   </button>
 
- <form id="entry-form" action="/entries" method="POST">
-  <div class="mb-3">
-    <label for="title" class="form-label">Title</label>
-    <input type="text" class="form-control" id="title" name="title" required />
-  </div>
+  <form id="entry-form" action="/entries" method="POST">
+    <div class="mb-3">
+      <label for="title" class="form-label">Title</label>
+      <input type="text" class="form-control" id="title" name="title" required />
+    </div>
 
-  <div class="mb-3">
-    <label class="form-label">Content</label>
-    <div id="editor" style="height: 300px;"></div>
+    <div class="mb-3">
+      <label class="form-label">Content</label>
+      <div id="editor" style="height: 300px;"></div>
+      <textarea id="content" name="content" hidden></textarea>
+    </div>
 
-    <!-- Hidden field to store HTML from Quill -->
-    <textarea id="content" name="content" hidden></textarea>
-  </div>
-  <div id="ai-suggestion-container" class="mt-4 d-none">
-    <h5 class="text-light">✍️ AI Suggestion</h5>
-    <div id="ai-suggestion" class="p-3 rounded text-light" style="background-color: #2c2c2c;"></div>
-  </div>
-  <button type="submit" class="btn btn-primary">Create Entry</button>
-</form>
+    <div id="ai-suggestion-container" class="mt-4 d-none">
+      <h5 class="text-light">✍️ AI Suggestion</h5>
+      <div id="ai-suggestion" class="p-3 rounded text-light" style="background-color: #2c2c2c;"></div>
+    </div>
 
+    <button type="submit" class="btn btn-primary">Create Entry</button>
+  </form>
+</div>
 
 <script>
   const quill = new Quill('#editor', {
     theme: 'snow'
   });
 
-   const form = document.getElementById('entry-form');
+  const form = document.getElementById('entry-form');
   const contentInput = document.getElementById('content');
-
   form.addEventListener('submit', function (e) {
     contentInput.value = quill.root.innerHTML;
   });
 
-const btn = document.getElementById("ai-suggest-btn");
+  const btn = document.getElementById("ai-suggest-btn");
   const text = document.getElementById("btn-text");
   const spinner = document.getElementById("spinner");
   const suggestionContainer = document.getElementById("ai-suggestion-container");
   const suggestionDiv = document.getElementById("ai-suggestion");
+  const usageSpan = document.getElementById("ai-uses-left");
 
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
 
-    // Start loading
     btn.disabled = true;
     spinner.classList.remove("d-none");
     text.innerText = "Thinking...";
 
-    // Get the prompt from Quill
-    const prompt = quill.getText(); // or quill.root.innerText
+    const prompt = quill.getText().trim();
 
     try {
       const res = await fetch("/ai/suggest", {
@@ -68,21 +75,40 @@ const btn = document.getElementById("ai-suggest-btn");
 
       const data = await res.json();
 
-      if (data && data.suggestion) {
+      if (res.ok && data.suggestion) {
         suggestionContainer.classList.remove("d-none");
         suggestionDiv.innerText = data.suggestion.trim();
+
+        // Decrement usage
+        let current = parseInt(usageSpan.innerText);
+        if (!isNaN(current) && current > 0) {
+          current -= 1;
+          usageSpan.innerText = current;
+
+          if (current === 0) {
+            btn.disabled = true;
+            btn.title = "Daily AI limit reached";
+            text.innerText = "AI Limit Reached";
+          } else {
+            btn.disabled = false;
+            text.innerText = "Get AI Suggestion";
+          }
+        }
+      } else if (res.status === 429) {
+        suggestionContainer.classList.remove("d-none");
+        suggestionDiv.innerText = "⚠️ Daily AI limit reached (5/day).";
+        usageSpan.innerText = "0";
+        btn.disabled = true;
+        text.innerText = "AI Limit Reached";
       } else {
-        suggestionDiv.innerText = "No suggestion received.";
+        throw new Error(data?.error || "Unexpected error");
       }
     } catch (err) {
-      suggestionDiv.innerText = "Error fetching suggestion.";
       suggestionContainer.classList.remove("d-none");
+      suggestionDiv.innerText = "❌ Error fetching suggestion.";
+      console.error("AI Suggestion Error:", err);
     } finally {
-      // Reset UI
-      btn.disabled = false;
       spinner.classList.add("d-none");
-      text.innerText = "Get AI Suggestion";
     }
   });
 </script>
-</div>

@@ -12,7 +12,7 @@ const LocalStrategy = require('passport-local');
 const Entry = require('./models/entry');
 const User = require('./models/user');
 const flash = require('connect-flash');
-const { isLoggedIn, isAuthor } = require('./middleware');
+const { isLoggedIn, isAuthor ,aiLimiter } = require('./middleware');
 const sanitizeHtml = require('sanitize-html');
 const axios = require('axios');
 
@@ -52,6 +52,15 @@ app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
+  next();
+});
+app.use(async (req, res, next) => {
+  if (req.user) {
+    const user = await User.findById(req.user._id);
+    const today = new Date().toDateString();
+    const usedToday = user.aiUsage?.lastUsed?.toDateString() === today ? user.aiUsage.count : 0;
+    res.locals.aiUsesLeft = Math.max(5 - usedToday, 0);
+  }
   next();
 });
 
@@ -149,10 +158,17 @@ app.delete('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
 });
 
 // =================== OPENAI ROUTES ===================
-app.post('/ai/suggest', async (req, res) => {
+app.post('/ai/suggest',isLoggedIn, aiLimiter, async (req, res) => {
 
   const { prompt } = req.body;
-  const fullPrompt = `You are a journal writer. Continue the following diary entry in the same casual and personal tone, adding emotional reflection and vivid detail:\n\n"${prompt}"\n\nContinuation:`;
+const fullPrompt = `
+You are a personal journal writing assistant. Your task is to continue this user's diary entry in a natural, emotional, and reflective tone. Focus on weather, mood, small details, and do not introduce unrelated stories.
+
+User's diary begins:
+"${prompt}"
+
+Continue writing as if you are the same person, expanding on the same situation:
+`;
   try {
     const response = await axios.post(
       'https://api.together.xyz/inference',

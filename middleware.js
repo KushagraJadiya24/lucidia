@@ -25,3 +25,33 @@ module.exports.isAuthor = async (req, res, next) => {
   next();
 };
 
+// middleware/aiLimiter.js
+const User = require('./models/user');
+
+module.exports.aiLimiter = async (req, res, next) => {
+  const userId = req.user._id; // or req.session.user._id if using sessions
+
+  const user = await User.findById(userId);
+
+  if (!user) return res.status(401).json({ error: "Unauthorized" });
+
+  const today = new Date();
+  const lastUsed = user.aiUsage.lastUsed || new Date(0);
+  const isSameDay = today.toDateString() === lastUsed.toDateString();
+
+  if (isSameDay && user.aiUsage.count >= 5) {
+    return res.status(429).json({ error: "Daily AI limit reached (5/day)" });
+  }
+
+  // Update count or reset for new day
+  if (isSameDay) {
+    user.aiUsage.count += 1;
+  } else {
+    user.aiUsage.count = 1;
+    user.aiUsage.lastUsed = today;
+  }
+
+  await user.save();
+  next();
+};
+
