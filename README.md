@@ -1,6 +1,7 @@
 # 🌙 Lucidia – Dream Journal App
 
-Lucidia is a beautiful, minimalistic journaling app built using **Express.js**, **EJS**, and **Bootstrap**. Designed with aesthetics and simplicity in mind, Lucidia helps users reflect on their thoughts and emotions by writing entries in a serene, glassy-paper styled UI.
+Lucidia is a **private, personal journal** web app where you can write, edit, and reflect on your thoughts — with the help of an integrated **AI writing assistant**. It’s built with **Node.js**, **Express**, **MongoDB**, **Quill.js**, and uses the **Together AI API** for smart journaling suggestions.
+
 
 > ✨ “Dear Diary, Today I...” — because your story deserves a space.
 
@@ -8,22 +9,25 @@ Lucidia is a beautiful, minimalistic journaling app built using **Express.js**, 
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: EJS templating, Bootstrap 5, Custom CSS
+- **Frontend**: EJS, Bootstrap 5, Quill.js    
 - **Backend**: Node.js, Express.js
 - **Templating Engine**: EJS-Mate Layouts
-- **Storage (Current Version)**: In-memory array (MongoDB coming soon)
+- **Storage**: MongoDB (local or Atlas) 
 - **Version Control**: Git & GitHub
+- **Security**: sanitize-html, session management
+- **AI API**: [Together.xyz](https://www.together.xyz/) - Mistral 7B 
 
 ---
 
-## 💡 Features
+## ✨ Features
 
-- 🎨 Stunning landing page with dreamy gradients
-- 📖 Create, Read, Update, and Delete journal entries (CRUD)
-- 📝 Editable entries directly from the "Show" page
-- 🧠 Entries styled like notebook paper with hand-written feel using [Kalam Font](https://fonts.google.com/specimen/Kalam)
-- 📅 Auto-generated timestamps
-- 🔒 Authentication and MongoDB integration coming soon!
+- 🧠 **AI Writing Assistant** – Suggests emotionally reflective and vivid diary entry continuations (limited to 5/day).
+- 🔐 **User Authentication** – Sign up and login securely with Passport.js.
+- 📓 **Create / Read / Update / Delete (CRUD)** for journal entries.
+- 💬 **Quill.js Rich Text Editor** – Clean and intuitive journaling experience.
+- 🛡️ **XSS-Safe Input** – Content is sanitized on server before storing.
+- 🎯 **Daily AI Usage Limit** – Prevents AI abuse with custom middleware.
+- 🌙 **Dark Themed UI** – Simple and modern Bootstrap + custom styling.
 
 ---
 
@@ -38,5 +42,16 @@ cd lucidia-journal
 ### 2. Install dependencies
 npm install
 
-### 3. Run the app
-node index.js
+⚙️ Setup
+Create a .env file in the root with:
+
+TOGETHER_API_KEY=your_together_api_key
+SESSION_SECRET=some_strong_secret
+MONGO_URL=mongodb://localhost:27017/lucidia
+
+Run MongoDB locally or setup MongoDB Atlas.
+
+Start the server:
+
+nodemon app.js
+Visit: http://localhost:3000
