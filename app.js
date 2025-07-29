@@ -1,3 +1,5 @@
+
+require("dotenv").config();
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -11,6 +13,8 @@ const Entry = require('./models/entry');
 const User = require('./models/user');
 const flash = require('connect-flash');
 const { isLoggedIn, isAuthor } = require('./middleware');
+const sanitizeHtml = require('sanitize-html');
+const axios = require('axios');
 
 // DB connection
 const MONGO_URL = "mongodb://127.0.0.1:27017/lucidia";
@@ -25,6 +29,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
+app.use(express.json());
 
 // Session & Flash
 app.use(session({
@@ -83,6 +88,23 @@ app.get('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
 // Create new entry
 app.post('/entries', isLoggedIn, async (req, res) => {
   const { title, content } = req.body;
+  const cleanContent = sanitizeHtml(content, {
+    allowedTags: ['p', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'br', 'span'],
+    allowedAttributes: {
+      'a': ['href', 'target'],
+      'span': ['style']
+    },
+    allowedStyles: {
+      '*': {
+        // allow some inline styles if needed
+        'color': [/^.*$/],
+        'background-color': [/^.*$/],
+        'font-weight': [/^.*$/],
+        'text-align': [/^.*$/]
+      }
+    }
+  });
+
   const newEntry = new Entry({
     title,
     content,
@@ -99,6 +121,21 @@ app.patch('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
   const { id } = req.params;
   const { title, content } = req.body;
 
+  const cleanContent = sanitizeHtml(content, {
+    allowedTags: ['p', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'br', 'span'],
+    allowedAttributes: {
+      'a': ['href', 'target'],
+      'span': ['style']
+    },
+    allowedStyles: {
+      '*': {
+        'color': [/^.*$/],
+        'background-color': [/^.*$/],
+        'font-weight': [/^.*$/],
+        'text-align': [/^.*$/]
+      }
+    }
+  });
   await Entry.findByIdAndUpdate(id, { title, content });
   req.flash('success', 'Entry updated!');
   res.redirect(`/entries/${id}`);
@@ -110,6 +147,39 @@ app.delete('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
   req.flash('success', 'Entry deleted!');
   res.redirect('/entries');
 });
+
+// =================== OPENAI ROUTES ===================
+app.post('/ai/suggest', async (req, res) => {
+
+  const { prompt } = req.body;
+  const fullPrompt = `You are a journal writer. Continue the following diary entry in the same casual and personal tone, adding emotional reflection and vivid detail:\n\n"${prompt}"\n\nContinuation:`;
+  try {
+    const response = await axios.post(
+      'https://api.together.xyz/inference',
+      {
+        model: "mistralai/Mistral-7B-Instruct-v0.1", 
+        prompt: fullPrompt,
+        max_tokens: 80,
+        temperature: 0.9,
+        top_p: 0.9,
+        repetition_penalty: 1.2,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.TOGETHER_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const suggestion = response.data.output?.choices?.[0]?.text || "No suggestion available.";
+    res.json({ suggestion });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "AI Suggestion failed." });
+  }
+});
+
 
 // ============== AUTH ROUTES ==============
 

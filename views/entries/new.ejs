@@ -4,6 +4,10 @@
   <div class="new-entry-header text-center mb-5 animate-entry">
     <h1 class="display-5 fw-bold gradient-heading">“Dear Diary, Today I…”</h1>
   </div>
+  <button id="ai-suggest-btn" class="btn btn-outline-light">
+    <span id="btn-text">Get AI Suggestion</span>
+    <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+  </button>
 
  <form id="entry-form" action="/entries" method="POST">
   <div class="mb-3">
@@ -18,7 +22,10 @@
     <!-- Hidden field to store HTML from Quill -->
     <textarea id="content" name="content" hidden></textarea>
   </div>
-
+  <div id="ai-suggestion-container" class="mt-4 d-none">
+    <h5 class="text-light">✍️ AI Suggestion</h5>
+    <div id="ai-suggestion" class="p-3 rounded text-light" style="background-color: #2c2c2c;"></div>
+  </div>
   <button type="submit" class="btn btn-primary">Create Entry</button>
 </form>
 
@@ -34,7 +41,48 @@
   form.addEventListener('submit', function (e) {
     contentInput.value = quill.root.innerHTML;
   });
+
+const btn = document.getElementById("ai-suggest-btn");
+  const text = document.getElementById("btn-text");
+  const spinner = document.getElementById("spinner");
+  const suggestionContainer = document.getElementById("ai-suggestion-container");
+  const suggestionDiv = document.getElementById("ai-suggestion");
+
+  btn.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    // Start loading
+    btn.disabled = true;
+    spinner.classList.remove("d-none");
+    text.innerText = "Thinking...";
+
+    // Get the prompt from Quill
+    const prompt = quill.getText(); // or quill.root.innerText
+
+    try {
+      const res = await fetch("/ai/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await res.json();
+
+      if (data && data.suggestion) {
+        suggestionContainer.classList.remove("d-none");
+        suggestionDiv.innerText = data.suggestion.trim();
+      } else {
+        suggestionDiv.innerText = "No suggestion received.";
+      }
+    } catch (err) {
+      suggestionDiv.innerText = "Error fetching suggestion.";
+      suggestionContainer.classList.remove("d-none");
+    } finally {
+      // Reset UI
+      btn.disabled = false;
+      spinner.classList.add("d-none");
+      text.innerText = "Get AI Suggestion";
+    }
+  });
 </script>
-
-
 </div>
