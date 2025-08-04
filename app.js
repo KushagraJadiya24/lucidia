@@ -1,5 +1,4 @@
 
-require("dotenv").config();
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -7,6 +6,8 @@ const ejsMate = require("ejs-mate");
 const methodOverride = require('method-override');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoStore = require("connect-mongo");
+require("dotenv").config();
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const Entry = require('./models/entry');
@@ -34,11 +35,31 @@ app.use(methodOverride('_method'));
 app.use(express.json());
 
 // Session & Flash
-app.use(session({
-  secret: 'thisshouldbeabettersecret',
+
+const store = MongoStore.create({
+  mongoUrl: MONGO_URL,
+  crypto:{
+    secret:process.env.SECRET,
+  },
+  touchAfter: 24 * 3600, // time in seconds to avoid frequent updates
+});
+store.on("error", function (e) {
+  console.log("Session Store Error", e);
+});
+
+const sessionOptions = {
+  store,
+  secret: process.env.SECRET,
   resave: false,
-  saveUninitialized: false
-}));
+  saveUninitialized: true,
+  cookie: {
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    httpOnly: true, // Helps prevent XSS attacks
+  },
+}
+
+app.use(session(sessionOptions));
 
 
 // Passport Config
