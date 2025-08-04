@@ -77,7 +77,11 @@ app.get('/', (req, res) => {
 // Show all entries (only for logged-in user)
 app.get('/entries', isLoggedIn, async (req, res) => {
   const entries = await Entry.find({ user: req.user._id });
-  res.render('entries/entries', { entries });
+  const decryptedEntries = entries.map((entry) => ({
+    ...entry._doc,
+    content: entry.getDecryptedContent(),
+  }));
+  res.render('entries/entries', { entries: decryptedEntries});
 });
 
 // New entry form
@@ -93,6 +97,7 @@ app.get('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
     req.flash('error', 'Entry not found');
     return res.redirect('/entries');
   }
+  entry.content = entry.getDecryptedContent();
   res.render('entries/show', { entry });
 });
 
