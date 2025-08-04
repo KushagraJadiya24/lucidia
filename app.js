@@ -16,11 +16,12 @@ const flash = require('connect-flash');
 const { isLoggedIn, isAuthor ,aiLimiter } = require('./middleware');
 const sanitizeHtml = require('sanitize-html');
 const axios = require('axios');
+const { encrypt, decrypt } = require('./utils/encryption');
 
 // DB connection
 const MONGO_URL = process.env.ATLASDB_URL;
 mongoose.connect(MONGO_URL, {
-  dbName: 'lucidia', // optional but explicit
+  dbName: 'lucidia', 
 })
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error("❌ MongoDB Error:", err));
@@ -173,9 +174,21 @@ app.patch('/entries/:id', isLoggedIn, isAuthor, async (req, res) => {
       }
     }
   });
-  await Entry.findByIdAndUpdate(id, { title, content });
+
+  try{
+  const entry = await Entry.findById(id);
+  entry.title = title;
+  entry.content = cleanContent; // encryption handled in pre("save")
+  await entry.save();
   req.flash('success', 'Entry updated!');
   res.redirect(`/entries/${id}`);
+  }
+  catch(err){
+    console.error("Error updating entry:", err);
+    req.flash('error', 'Failed to update entry');
+    return res.redirect(`/entries/${id}`);
+  }
+  
 });
 
 // Delete entry
@@ -272,6 +285,7 @@ app.get('/logout', (req, res, next) => {
 });
 
 // =================== SERVER ===================
-app.listen(3000, () => {
-  console.log("🚀 Server running on http://localhost:3000");
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`🚀 Server running on ${port}`);
 });
