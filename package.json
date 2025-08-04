@@ -19,6 +19,7 @@
     "express": "^5.1.0",
     "express-session": "^1.18.2",
     "method-override": "^3.0.0",
+    "mongodb": "^6.18.0",
     "mongoose": "^8.16.5",
     "nodemon": "^3.1.10",
     "openai": "^5.10.2",

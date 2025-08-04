@@ -17,8 +17,10 @@ const sanitizeHtml = require('sanitize-html');
 const axios = require('axios');
 
 // DB connection
-const MONGO_URL = "mongodb://127.0.0.1:27017/lucidia";
-mongoose.connect(MONGO_URL)
+const MONGO_URL = process.env.ATLASDB_URL;
+mongoose.connect(MONGO_URL, {
+  dbName: 'lucidia', // optional but explicit
+})
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error("❌ MongoDB Error:", err));
 
